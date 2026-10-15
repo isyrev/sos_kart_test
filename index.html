@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Генератор SOS карт</title>
+<style>
+    :root {
+        --brand: #03be93;
+        --brand-dark: #029473;
+        --white: #ffffff;
+        --bg: #07100e;
+        --panel: #0f1d19;
+        --line: #1f3a33;
+        --muted: #8fa8a1;
+        --label: #6f8d85;
+        --danger: #f87171;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { background: var(--bg); }
+    body {
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        min-height: 100vh;
+        color: var(--white);
+        display: flex; flex-direction: column; align-items: center;
+        padding: 20px 20px 60px;
+        position: relative;
+    }
+
+    /* ---------- Фон: размытая фотография ---------- */
+    .bg-photo {
+        position: fixed; inset: -30px; z-index: -2;
+        background-size: cover; background-position: center;
+        filter: blur(14px) brightness(0.9);
+    }
+    .bg-shade {
+        position: fixed; inset: 0; z-index: -1;
+        background: linear-gradient(180deg, rgba(7,16,14,.78) 0%, rgba(7,16,14,.9) 60%, var(--bg) 100%);
+    }
+
+    /* ---------- Шапка ---------- */
+    .header { text-align: center; margin-bottom: 24px; padding-top: 16px; }
+    .logo { display: block; max-height: 72px; max-width: 260px; margin: 0 auto 16px; }
+    .logo[hidden] { display: none; }
+    .header h1 { font-size: 1.9rem; font-weight: 600; margin-bottom: 8px; }
+    .header p { color: var(--muted); font-size: 0.95rem; }
+
+    /* ---------- Кнопки ---------- */
+    .controls {
+        display: flex; flex-wrap: wrap; gap: 14px; justify-content: center;
+        align-items: center; margin: 12px 0 28px;
+    }
+    .big-btn {
+        border: 2px solid var(--brand); background: var(--brand); color: #04201a;
+        padding: 16px 40px; font-size: 1.15rem; font-weight: 600; border-radius: 12px;
+        cursor: pointer; transition: all .2s ease; letter-spacing: .3px;
+        box-shadow: 0 4px 20px rgba(3,190,147,.35);
+        font-family: inherit;
+    }
+    .big-btn:hover { transform: translateY(-2px); background: #04d4a4; border-color: #04d4a4; }
+    .big-btn:active { transform: translateY(0); }
+    .big-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .big-btn:focus-visible, .copy-mini:focus-visible, .site-card:focus-visible { outline: 3px solid var(--white); outline-offset: 3px; }
+
+    /* Переключатель Опасные / Безопасные: активная светится, неактивная гаснет */
+    .mode-btn {
+        padding: 16px 32px; font-size: 1.15rem; font-weight: 600; border-radius: 12px;
+        cursor: pointer; transition: all .2s ease; letter-spacing: .3px; font-family: inherit;
+        border: 2px solid var(--brand); background: var(--brand); color: #04201a;
+        box-shadow: 0 4px 20px rgba(3,190,147,.35);
+    }
+    .mode-btn:not(.active) {
+        background: rgba(15,29,25,.7); color: var(--muted);
+        border-color: var(--line); box-shadow: none; opacity: .65;
+    }
+    .mode-btn:not(.active):hover { opacity: 1; border-color: var(--brand); color: var(--white); }
+    .mode-btn:focus-visible { outline: 3px solid var(--white); outline-offset: 3px; }
+
+    /* ---------- Карточка заявки ---------- */
+    .card {
+        background: rgba(15,29,25,.92); border: 1px solid var(--line); border-radius: 16px;
+        padding: 28px 32px; max-width: 720px; width: 100%;
+        box-shadow: 0 10px 40px rgba(0,0,0,.4);
+        display: none; animation: fadeIn .35s ease;
+        border-top: 3px solid var(--brand);
+    }
+    .card.visible { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    .field { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+    .field[hidden] { display: none; }
+    .field:last-of-type { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 10px; }
+    .label { font-size: .8rem; color: var(--label); font-weight: 500; margin-bottom: 6px; }
+    .label-row .label { margin-bottom: 0; }
+    .value { font-size: 1.05rem; line-height: 1.5; word-wrap: break-word; }
+    .value.fixed { color: var(--muted); }
+    .value.highlight { color: var(--brand); font-weight: 500; }
+    .value.danger { color: var(--danger); font-weight: 500; }
+    .copy-mini {
+        background: transparent; color: var(--brand); border: 1px solid var(--brand);
+        padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: .75rem;
+        white-space: nowrap; transition: all .15s; flex-shrink: 0; font-family: inherit;
+    }
+    .copy-mini:hover { background: var(--brand); color: #04201a; }
+    .copy-mini.copied { background: var(--brand-dark); border-color: var(--brand-dark); color: var(--white); }
+    .copy-all-btn {
+        margin: 22px auto 0; display: block; background: transparent; color: var(--white);
+        border: 1px solid var(--line); padding: 10px 24px; border-radius: 8px; cursor: pointer;
+        font-size: .9rem; transition: all .2s; font-family: inherit;
+    }
+    .copy-all-btn:hover { border-color: var(--brand); color: var(--brand); }
+    .status { color: var(--muted); font-size: .95rem; margin-top: 4px; text-align: center; max-width: 720px; }
+    .status.error { color: var(--danger); }
+    .toast {
+        position: fixed; bottom: 30px; background: var(--brand); color: #04201a;
+        padding: 12px 24px; border-radius: 8px; font-weight: 600;
+        opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 100;
+    }
+    .toast.show { opacity: 1; }
+
+    /* ---------- Карточки-ссылки на сайты компании ---------- */
+    .sites { width: 100%; max-width: 1100px; margin-top: 56px; }
+    .sites h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; text-align: center; color: var(--muted); }
+    .sites-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    .site-card {
+        display: flex; flex-direction: column; text-decoration: none; color: var(--white);
+        background: rgba(15,29,25,.92); border: 1px solid var(--line); border-radius: 14px;
+        overflow: hidden; transition: transform .2s, border-color .2s;
+    }
+    .site-card:hover { transform: translateY(-4px); border-color: var(--brand); }
+    .site-shot {
+        aspect-ratio: 16 / 10; background: #0b1714 center / cover no-repeat;
+        border-bottom: 1px solid var(--line);
+        display: flex; align-items: center; justify-content: center;
+        color: var(--label); font-size: .8rem; text-align: center; padding: 8px;
+    }
+    .site-title { padding: 14px 16px; font-weight: 500; font-size: .98rem; }
+    @media (max-width: 900px) { .sites-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) {
+        .sites-grid { grid-template-columns: 1fr; }
+        .card { padding: 22px 20px; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="bg-photo" id="bgPhoto"></div>
+<div class="bg-shade"></div>
+
+<div class="header">
+    <img class="logo" id="logo" alt="Логотип компании" hidden>
+    <h1>Генератор SOS карт</h1>
+    <p>Твой помощник в написании SOSок</p>
+</div>
+
+<div class="controls">
+    <button class="mode-btn" id="btnDanger" onclick="setMode('danger')">Опасные</button>
+    <button class="mode-btn active" id="btnSafe" onclick="setMode('safe')">Безопасные</button>
+    <button class="big-btn" id="genBtn" onclick="generate()" disabled>Загрузка...</button>
+</div>
+
+<div class="status" id="status"></div>
+
+<div class="card" id="resultCard">
+    <div class="field">
+        <div class="label">Город наблюдения</div>
+        <div class="value fixed">г. Нефтеюганск</div>
+    </div>
+    <div class="field">
+        <div class="label">Опасные/безопасные действия или условия</div>
+        <div class="value highlight" id="action"></div>
+    </div>
+    <div class="field" id="stopField" hidden>
+        <div class="label">Работы остановлены?</div>
+        <div class="value danger" id="stop"></div>
+    </div>
+    <div class="field">
+        <div class="label">Место наблюдения</div>
+        <div class="value fixed">Месторождение (Field)</div>
+    </div>
+    <div class="field">
+        <div class="label">Наблюдали в отношении</div>
+        <div class="value fixed" id="observed"></div>
+    </div>
+    <div class="field" id="orgField" hidden>
+        <div class="label">Подрядная организация</div>
+        <div class="value fixed" id="organization"></div>
+    </div>
+    <div class="field">
+        <div class="label">Категория</div>
+        <div class="value highlight" id="category"></div>
+    </div>
+    <div class="field">
+        <div class="label">Выберите заказчика</div>
+        <div class="value fixed">ООО «РН-Юганскнефтегаз»</div>
+    </div>
+    <div class="field">
+        <div class="label-row">
+            <div class="label">Опишите наблюдение</div>
+            <button class="copy-mini" onclick="copyField('description', this)">Копировать</button>
+        </div>
+        <div class="value" id="description"></div>
+    </div>
+    <div class="field">
+        <div class="label-row">
+            <div class="label">Корректирующие действия</div>
+            <button class="copy-mini" onclick="copyField('correction', this)">Копировать</button>
+        </div>
+        <div class="value" id="correction"></div>
+    </div>
+    <button class="copy-all-btn" onclick="copyAll()">Копировать всю карту</button>
+</div>
+
+<section class="sites">
+    <h2>Другие сайты компании</h2>
+    <div class="sites-grid" id="sitesGrid"></div>
+</section>
+
+<div class="toast" id="toast">Скопировано!</div>
+
+<script>
+// =====================================================================
+//  НАСТРОЙКИ — меняйте только этот блок
+// =====================================================================
+const CONFIG = {
+    // Логотип над заголовком. Положите файл в папку assets и впишите имя.
+    // Оставьте пустую строку '', чтобы скрыть логотип.
+    logo: 'assets/logo.png',
+
+    // Размытая фотография на заднем фоне.
+    // Оставьте '' — тогда будет просто тёмный фон.
+    background: 'assets/background.jpg',
+
+    // 4 карточки внизу. Меняйте url (ссылка), title (название)
+    // и image (скриншот сайта: положите файл в assets и впишите имя).
+    sites: [
+        { title: 'Сайт 1', url: 'https://example.com/1', image: 'assets/site1.png' },
+        { title: 'Сайт 2', url: 'https://example.com/2', image: 'assets/site2.png' },
+        { title: 'Сайт 3', url: 'https://example.com/3', image: 'assets/site3.png' },
+        { title: 'Сайт 4', url: 'https://example.com/4', image: 'assets/site4.png' }
+    ]
+};
+
+// =====================================================================
+//  ЛОГОТИП, ФОН И КАРТОЧКИ САЙТОВ
+// =====================================================================
+(function initDecor() {
+    const logo = document.getElementById('logo');
+    if (CONFIG.logo) {
+        logo.onload = () => { logo.hidden = false; };
+        logo.onerror = () => { logo.hidden = true; };
+        logo.src = CONFIG.logo;
+    }
+
+    if (CONFIG.background) {
+        const probe = new Image();
+        probe.onload = () => {
+            document.getElementById('bgPhoto').style.backgroundImage = `url("${CONFIG.background}")`;
+        };
+        probe.src = CONFIG.background;
+    }
+
+    const grid = document.getElementById('sitesGrid');
+    CONFIG.sites.forEach(site => {
+        const a = document.createElement('a');
+        a.className = 'site-card';
+        a.href = site.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+
+        const shot = document.createElement('div');
+        shot.className = 'site-shot';
+        shot.textContent = 'Скриншот сайта';
+        if (site.image) {
+            const probe = new Image();
+            probe.onload = () => {
+                shot.textContent = '';
+                shot.style.backgroundImage = `url("${site.image}")`;
+            };
+            probe.src = site.image;
+        }
+
+        const title = document.createElement('div');
+        title.className = 'site-title';
+        title.textContent = site.title;
+
+        a.append(shot, title);
+        grid.appendChild(a);
+    });
+})();
+
+// =====================================================================
+//  СЕЗОНЫ: 1 — зима, 2 — весна, 3 — лето, 4 — осень
+// =====================================================================
+function currentSeason() {
+    // Для проверки можно открыть страницу с ?season=1..4
+    const forced = new URLSearchParams(location.search).get('season');
+    if (['1', '2', '3', '4'].includes(forced)) return forced;
+
+    const m = new Date().getMonth() + 1;           // 1..12
+    if (m === 12 || m <= 2) return '1';            // дек–фев
+    if (m <= 5) return '2';                        // мар–май
+    if (m <= 8) return '3';                        // июн–авг
+    return '4';                                    // сен–ноя
+}
+const SEASON_NAMES = { '1': 'зима', '2': 'весна', '3': 'лето', '4': 'осень' };
+
+// =====================================================================
+//  ВАРИАЦИИ ТЕКСТА (синонимы)
+// =====================================================================
+const synonyms = {
+    "обнаружил": ["заметил", "выявил", "зафиксировал", "увидел"],
+    "обнаружила": ["заметила", "выявила", "зафиксировала", "увидела"],
+    "заметил": ["обнаружил", "увидел", "выявил", "зафиксировал"],
+    "заметила": ["обнаружила", "увидела", "выявила", "зафиксировала"],
+    "увидел": ["заметил", "обнаружил", "выявил"],
+    "увидела": ["заметила", "обнаружила", "выявила"],
+    "сказал": ["сообщил", "доложил", "проинформировал", "уведомил"],
+    "сказала": ["сообщила", "доложила", "проинформировала", "уведомила"],
+    "сообщил": ["доложил", "сказал", "проинформировал", "довёл до сведения"],
+    "сообщила": ["доложила", "сказала", "проинформировала", "довела до сведения"],
+    "доложил": ["сообщил", "довёл до сведения", "проинформировал"],
+    "доложила": ["сообщила", "довела до сведения", "проинформировала"],
+    "проинформировал": ["сообщил", "уведомил", "доложил"],
+    "проинформировала": ["сообщила", "уведомила", "доложила"],
+    "сделал замечание": ["сделал устное замечание", "указал на нарушение", "провёл беседу", "обратил внимание"],
+    "сделала замечание": ["сделала устное замечание", "указала на нарушение", "провела беседу", "обратила внимание"],
+    "провёл беседу": ["провёл разъяснительную беседу", "провёл инструктаж", "сделал замечание"],
+    "провела беседу": ["провела разъяснительную беседу", "провела инструктаж", "сделала замечание"],
+    "заменил": ["произвёл замену", "заменил на новый", "осуществил замену"],
+    "заменила": ["произвела замену", "заменила на новый", "осуществила замену"],
+    "выдал": ["выдал со склада", "предоставил", "обеспечил"],
+    "выдала": ["выдала со склада", "предоставила", "обеспечила"],
+    "убрал": ["устранил", "ликвидировал", "убрал с места"],
+    "убрала": ["устранила", "ликвидировала", "убрала с места"],
+    "собрал": ["собрал и утилизировал", "убрал", "собрал в контейнер"],
+    "собрала": ["собрала и утилизировала", "убрала", "собрала в контейнер"],
+    "провёл проверку": ["осуществил проверку", "провёл осмотр", "проверил"],
+    "провела проверку": ["осуществила проверку", "провела осмотр", "проверила"],
+    "провёл осмотр": ["осуществил осмотр", "провёл проверку", "осмотрел"],
+    "провела осмотр": ["осуществила осмотр", "провела проверку", "осмотрела"],
+    "нарушений не обнаружено": ["замечаний нет", "нарушений не выявлено", "всё в порядке", "отклонений не установлено"],
+    "нарушений не выявлено": ["нарушений не обнаружено", "замечаний нет", "всё в норме"],
+    "нет нареканий": ["нареканий нет", "претензий нет", "замечаний нет", "работа выполнена качественно"],
+    "нареканий нет": ["нет нареканий", "претензий нет", "замечаний нет"],
+    "претензий нет": ["нет претензий", "нареканий нет", "замечаний нет"],
+    "доволен работой": ["работа выполнена качественно", "оценка положительная", "нареканий нет", "работа устраивает"],
+    "довольна работой": ["работа выполнена качественно", "оценка положительная", "нареканий нет", "работа устраивает"],
+    "работа безопасна": ["безопасность соблюдена", "условия безопасны", "работа выполнена безопасно"],
+    "СИЗ соблюдены": ["средства защиты надеты", "СИЗ использованы", "соблюдены требования по СИЗ"],
+    "согласно ТБ": ["в соответствии с требованиями ТБ", "с соблюдением техники безопасности", "по правилам ТБ"],
+    "согласно правилам": ["в соответствии с правилами", "по установленным правилам", "с соблюдением регламента"],
+    "доведено до мастера": ["информация передана мастеру", "мастер уведомлён", "доложено мастеру"],
+    "доведено до начальника": ["информация передана начальнику", "начальник уведомлён", "доложено начальнику"],
+    "сломан": ["вышел из строя", "неисправен", "пришёл в негодность"],
+    "сломалась": ["вышла из строя", "неисправна", "пришла в негодность"],
+    "сломалось": ["вышло из строя", "неисправно", "пришло в негодность"],
+    "износ": ["изношенность", "изношенный", "стёртость"],
+    "износились": ["пришли в негодность", "изношены", "вышли из строя"],
+    "износился": ["пришёл в негодность", "изношен", "вышел из строя"],
+    "перегорела": ["вышла из строя", "перегорела", "не работает"],
+    "перегорела лампочка": ["вышла из строя лампа", "перегорела лампа освещения", "не работает освещение"],
+    "перегорела лампа": ["вышла из строя лампа", "перегорела лампочка", "не работает освещение"],
+    "на территории базы": ["на территории", "на базе", "в пределах территории"],
+    "на кустовой площадке": ["на кусту", "на площадке", "на кустовой"],
+    "в цеху комплектации": ["в цехе комплектации", "на участке комплектации", "в комплектации"],
+    "электромонтёр": ["электромонтер", "сотрудник", "работник"],
+    "электромонтёры": ["электромонтеры", "сотрудники", "работники"],
+    "коллега": ["сотрудник", "работник", "напарник"],
+    "коллеги": ["сотрудники", "работники", "напарники"],
+    "мастер": ["руководитель", "мастер участка", "непосредственный руководитель"],
+    "начальник участка": ["руководитель участка", "начальник", "руководство"],
+    "начальник смены": ["руководитель смены", "начальник", "сменный руководитель"]
+};
+
+const phraseVariants = {
+    "нет нареканий по работе": ["Нареканий по работе нет", "Претензий к работе нет", "Работа выполнена без замечаний", "Замечаний и нареканий нет", "К работе претензий не имеется", "Работа соответствует требованиям"],
+    "Нет нареканий по работе": ["Нареканий по работе нет", "Претензий к работе нет", "Работа выполнена без замечаний", "Замечаний нет", "К работе претензий не имеется"],
+    "нет нареканий": ["Нареканий нет", "Претензий нет", "Замечаний нет", "Всё в порядке"],
+    "Нет нареканий": ["Нареканий нет", "Претензий нет", "Замечаний нет"],
+    "Не требуются": ["Корректирующие действия не требуются", "Дополнительных мер не требуется", "Действия не нужны", "Меры не требуются"],
+    "не требуются": ["Корректирующие действия не требуются", "Дополнительных мер не требуется", "Действия не нужны"],
+    "Корректирующие действия не требуются": ["Дополнительных мер не требуется", "Действия не нужны", "Меры не требуются", "Корректировка не нужна"]
+};
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function rephrase(text) {
+    if (!text || text.trim() === '' || text === '—') return text;
+    let result = text.trim();
+
+    if (phraseVariants[result]) return pick(phraseVariants[result]);
+
+    const keys = Object.keys(synonyms).sort((a, b) => b.length - a.length);
+    for (const key of keys) {
+        const regex = new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        if (regex.test(result) && Math.random() < 0.7) {
+            const replacement = pick(synonyms[key]);
+            result = result.replace(regex, match =>
+                match[0] === match[0].toUpperCase()
+                    ? replacement.charAt(0).toUpperCase() + replacement.slice(1)
+                    : replacement);
+        }
+    }
+
+    if (Math.random() < 0.25) {
+        if (result.endsWith('.')) { if (Math.random() < 0.5) result = result.slice(0, -1); }
+        else if (Math.random() < 0.3) result += '.';
+    }
+
+    if (Math.random() < 0.3) {
+        if (result.startsWith('Во время ')) result = pick(['В процессе ', 'При проведении ', 'Во время ']) + result.slice(9);
+        else if (result.startsWith('При ')) result = pick(['Во время ', 'В процессе ', 'При ']) + result.slice(4);
+        else if (result.startsWith('На территории ')) result = pick(['На территории ', 'В пределах территории ', 'На ']) + result.slice(14);
+    }
+    return result;
+}
+
+// =====================================================================
+//  ОСНОВНАЯ ЛОГИКА
+// =====================================================================
+let data = [];
+let mode = 'safe';   // 'safe' | 'danger'
+const season = currentSeason();
+
+const ORG_VALUE = 'Подрядная организация';
+const DEFAULT_OBSERVED = 'Группа компаний Технологии ОФС';
+
+function isDanger(item) { return /^опасн/i.test((item.action || '').trim()); }
+
+function seasonMatches(item) {
+    const s = String(item.season ?? '').trim();
+    return s === '' || s === '0' || s === season;   // пустой сезон = подходит всегда
+}
+
+function setMode(m) {
+    mode = m;
+    document.getElementById('btnDanger').classList.toggle('active', m === 'danger');
+    document.getElementById('btnSafe').classList.toggle('active', m === 'safe');
+}
+
+function showStatus(text, isError) {
+    const el = document.getElementById('status');
+    el.textContent = text;
+    el.classList.toggle('error', !!isError);
+}
+
+fetch('data.json')
+    .then(r => { if (!r.ok) throw new Error('Не удалось загрузить data.json'); return r.json(); })
+    .then(json => {
+        data = json;
+        const btn = document.getElementById('genBtn');
+        btn.disabled = false;
+        btn.textContent = 'Сгенерировать';
+        showStatus('Сезон: ' + SEASON_NAMES[season]);
+    })
+    .catch(err => {
+        showStatus('Ошибка: ' + err.message + '. Проверьте, что data.json лежит рядом с index.html', true);
+        document.getElementById('genBtn').textContent = 'Ошибка загрузки';
+    });
+
+function generate() {
+    const pool = data.filter(i => seasonMatches(i) && (mode === 'danger') === isDanger(i));
+    if (!pool.length) {
+        document.getElementById('resultCard').classList.remove('visible');
+        showStatus('Нет заявок типа «' + (mode === 'danger' ? 'Опасные' : 'Безопасные') +
+                   '» для сезона «' + SEASON_NAMES[season] + '». Добавьте их в data.json.', true);
+        return;
+    }
+    showStatus('Сезон: ' + SEASON_NAMES[season]);
+
+    const item = pool[Math.floor(Math.random() * pool.length)];
+
+    document.getElementById('action').textContent = item.action || '—';
+    document.getElementById('category').textContent = item.category || '—';
+
+    const observed = item['observed in relation to'] || DEFAULT_OBSERVED;
+    document.getElementById('observed').textContent = observed;
+
+    const showOrg = observed === ORG_VALUE;
+    document.getElementById('orgField').hidden = !showOrg;
+    document.getElementById('organization').textContent = item.organization || '—';
+
+    const showStop = isDanger(item);
+    document.getElementById('stopField').hidden = !showStop;
+    document.getElementById('stop').textContent = item.Stop || '—';
+
+    document.getElementById('description').textContent = rephrase(item.description || '—');
+    document.getElementById('correction').textContent = rephrase(item.correction || '—');
+
+    document.getElementById('resultCard').classList.add('visible');
+}
+
+function copyField(id, btn) {
+    const text = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        const original = btn.textContent;
+        btn.textContent = 'Скопировано!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1500);
+    });
+}
+
+function copyAll() {
+    const g = id => document.getElementById(id).textContent;
+    const lines = [
+        'Город наблюдения: г. Нефтеюганск',
+        'Опасные/безопасные действия или условия: ' + g('action')
+    ];
+    if (!document.getElementById('stopField').hidden) lines.push('Работы остановлены?: ' + g('stop'));
+    lines.push('Место наблюдения: Месторождение (Field)');
+    lines.push('Наблюдали в отношении: ' + g('observed'));
+    if (!document.getElementById('orgField').hidden) lines.push('Подрядная организация: ' + g('organization'));
+    lines.push(
+        'Категория: ' + g('category'),
+        'Выберите заказчика: ООО «РН-Юганскнефтегаз»',
+        'Опишите наблюдение: ' + g('description'),
+        'Корректирующие действия: ' + g('correction')
+    );
+    navigator.clipboard.writeText(lines.join('\n')).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+    });
+}
+</script>
+</body>
+</html>
