@@ -493,8 +493,6 @@
             const filtered = getFiltered();
             const season = getCurrentSeason();
             const modeLabel = filterMode === 'danger' ? 'опасных' : 'безопасных';
-            document.getElementById('status').textContent =
-                `Сезон: ${seasonNames[season]} · Доступно ${filtered.length} ${modeLabel} заявок`;
         }
 
         // ===================== ВАРИАЦИИ ТЕКСТА =====================
@@ -644,8 +642,7 @@
                 stopField.classList.add('hidden');
             }
 
-            document.getElementById('counter').textContent =
-                `Сезон: ${seasonNames[getCurrentSeason()]} · Из ${filtered.length} заявок`;
+
             document.getElementById('resultCard').classList.add('visible');
         }
 
