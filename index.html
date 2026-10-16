@@ -462,6 +462,72 @@
         // namespace уникальный для вашего сайта — не меняйте, иначе счётчик обнулится
         const STATS_NS = 'tofsgroup-sos-generator';
 
+        function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+        function getStatKeys() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = pad(now.getMonth() + 1);
+            const d = pad(now.getDate());
+            // неделя ISO-подобная: год + номер недели с понедельника
+            const day = now.getDay() || 7; // 1=пн … 7=вс
+            const thursday = new Date(now);
+            thursday.setDate(now.getDate() + 4 - day);
+            const yearStart = new Date(thursday.getFullYear(), 0, 1);
+            const weekNo = Math.ceil((((thursday - yearStart) / 86400000) + 1) / 7);
+            return {
+                day: 'day-' + y + '-' + m + '-' + d,
+                week: 'week-' + thursday.getFullYear() + '-W' + pad(weekNo),
+                month: 'month-' + y + '-' + m
+            };
+        }
+
+        async function countApi(action, key) {
+            // action: 'hit' (увеличить) или 'get' (прочитать)
+            const url = 'https://abacus.jasoncameron.dev/' + action + '/' + STATS_NS + '/' + key;
+            const r = await fetch(url);
+            if (!r.ok) throw new Error('counter ' + r.status);
+            const j = await r.json();
+            return typeof j.value === 'number' ? j.value : 0;
+        }
+
+        async function recordGenerateClick() {
+            const keys = getStatKeys();
+            try {
+                // параллельно увеличиваем день / неделю / месяц
+                await Promise.all([
+                    countApi('hit', keys.day),
+                    countApi('hit', keys.week),
+                    countApi('hit', keys.month)
+                ]);
+            } catch (e) {
+                console.warn('Не удалось обновить глобальный счётчик:', e);
+            }
+            updateStatsUI();
+        }
+
+        async function updateStatsUI() {
+            const keys = getStatKeys();
+            const dayEl = document.getElementById('statDay');
+            const weekEl = document.getElementById('statWeek');
+            const monthEl = document.getElementById('statMonth');
+            try {
+                const [day, week, month] = await Promise.all([
+                    countApi('get', keys.day),
+                    countApi('get', keys.week),
+                    countApi('get', keys.month)
+                ]);
+                dayEl.textContent = day;
+                weekEl.textContent = week;
+                monthEl.textContent = month;
+            } catch (e) {
+                dayEl.textContent = '—';
+                weekEl.textContent = '—';
+                monthEl.textContent = '—';
+                console.warn('Не удалось загрузить статистику:', e);
+            }
+        }
+
         function getCurrentSeason() {
             const m = new Date().getMonth() + 1;
             if (m === 12 || m <= 2) return '1';
