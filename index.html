@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Генератор SOS карт</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <style>
         :root {
-            --accent: #03be93;
-            --accent-hover: #02a67f;
+            --accent: #0078be;
+            --accent-hover: #00dbaf;
             --accent-dim: rgba(3, 190, 147, 0.25);
             --accent-glow: rgba(3, 190, 147, 0.4);
             --bg-dark: #0b1220;
@@ -18,11 +19,9 @@
             --text-dim: #64748b;
             --white: #ffffff;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Comic Sans MS', system-ui, -apple-system, sans-serif;
             min-height: 100vh;
             color: var(--text);
             display: flex;
@@ -32,8 +31,6 @@
             position: relative;
             overflow-x: hidden;
         }
-
-        /* === Background photo (replace bg.jpg) === */
         .bg-photo {
             position: fixed;
             inset: 0;
@@ -48,8 +45,6 @@
             background: linear-gradient(160deg, #0b1220 0%, rgba(11,18,32,0.92) 40%, rgba(3,40,35,0.85) 100%);
             z-index: -1;
         }
-
-        /* === Header + Logo === */
         .header {
             text-align: center;
             margin-bottom: 28px;
@@ -74,15 +69,19 @@
             color: var(--text-muted);
             font-size: 0.95rem;
         }
-
-        /* === Filter buttons + Generate === */
         .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+        .filter-row {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
             justify-content: center;
             align-items: center;
-            margin-bottom: 28px;
         }
         .filter-btn, .generate-btn {
             border: none;
@@ -93,6 +92,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
             letter-spacing: 0.3px;
+            font-family: 'Comic Sans MS';
         }
         .filter-btn {
             background: rgba(30, 41, 59, 0.8);
@@ -131,7 +131,6 @@
             transform: none;
             filter: none;
         }
-
         .status {
             color: var(--text-muted);
             font-size: 0.88rem;
@@ -139,8 +138,6 @@
             text-align: center;
         }
         .status.error { color: #f87171; }
-
-        /* === Result card === */
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border);
@@ -158,7 +155,6 @@
             from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
         .field {
             margin-bottom: 16px;
             padding-bottom: 14px;
@@ -166,7 +162,6 @@
         }
         .field:last-of-type { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .field.hidden { display: none; }
-
         .label-row {
             display: flex;
             align-items: center;
@@ -190,7 +185,6 @@
         .value.fixed { color: var(--text-muted); }
         .value.highlight { color: var(--accent); font-weight: 600; }
         .value.danger { color: #f87171; font-weight: 600; }
-
         .copy-mini {
             background: rgba(30, 41, 59, 0.9);
             color: var(--text-muted);
@@ -213,33 +207,12 @@
             border-color: var(--accent);
             color: var(--accent);
         }
-
         .counter {
             margin-top: 18px;
             font-size: 0.85rem;
             color: var(--text-dim);
             text-align: center;
         }
-        .copy-all-btn {
-            margin-top: 18px;
-            background: rgba(30, 41, 59, 0.9);
-            color: var(--text);
-            border: 1px solid var(--border);
-            padding: 10px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .copy-all-btn:hover {
-            background: var(--accent-dim);
-            border-color: var(--accent);
-            color: var(--white);
-        }
-
         .toast {
             position: fixed;
             bottom: 30px;
@@ -255,8 +228,6 @@
             box-shadow: 0 4px 20px var(--accent-glow);
         }
         .toast.show { opacity: 1; }
-
-        /* === Bottom link cards === */
         .links-section {
             margin-top: 56px;
             width: 100%;
@@ -312,34 +283,72 @@
             color: var(--text-dim);
             line-height: 1.35;
         }
-
+        .stats-section {
+            margin-top: 48px;
+            width: 100%;
+            max-width: 720px;
+            text-align: center;
+        }
+        .stats-title {
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 12px;
+            backdrop-filter: blur(10px);
+        }
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1.2;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        .stats-note {
+            margin-top: 12px;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
         @media (max-width: 520px) {
             .header h1 { font-size: 1.45rem; }
-            .controls { flex-direction: column; }
             .filter-btn, .generate-btn { width: 100%; max-width: 280px; }
+            .filter-row { width: 100%; flex-direction: column; align-items: center; }
             .card { padding: 20px 18px; }
+            .stats-grid { grid-template-columns: 1fr; max-width: 240px; margin: 0 auto; }
         }
     </style>
 </head>
 <body>
-    <!-- Background: put your photo as bg.jpg next to index.html -->
     <div class="bg-photo"></div>
     <div class="bg-overlay"></div>
-
     <div class="header">
-        <!-- Logo: put your logo as logo.png next to index.html -->
         <img class="logo" src="logo.png" alt="Логотип" onerror="this.style.display='none'">
         <h1>Генератор SOS карт</h1>
         <p>Твой помощник в написании SOSок</p>
     </div>
-
     <div class="controls">
-        <button class="filter-btn active" id="btnSafe" onclick="setFilter('safe')">Безопасные</button>
-        <button class="filter-btn" id="btnDanger" onclick="setFilter('danger')">Опасные</button>
+        <div class="filter-row">
+            <button class="filter-btn active" id="btnSafe" onclick="setFilter('safe')">Безопасные</button>
+            <button class="filter-btn" id="btnDanger" onclick="setFilter('danger')">Опасные</button>
+        </div>
         <button class="generate-btn" id="genBtn" onclick="generate()" disabled>Загрузка...</button>
     </div>
-    <div class="status" id="status">Загрузка заявок...</div>
-
+    <div class="status" id="status"></div>
     <div class="card" id="resultCard">
         <div class="field">
             <div class="label">Город наблюдения</div>
@@ -357,9 +366,11 @@
             <div class="label">Наблюдали в отношении</div>
             <div class="value" id="observed"></div>
         </div>
-        <!-- Показывается только если Подрядная организация -->
         <div class="field hidden" id="orgField">
-            <div class="label">Подрядная организация</div>
+            <div class="label-row">
+                <div class="label">Подрядная организация</div>
+                <button class="copy-mini" onclick="copyField('organization', this)">Копировать</button>
+            </div>
             <div class="value highlight" id="organization"></div>
         </div>
         <div class="field">
@@ -370,7 +381,6 @@
             <div class="label">Выберите заказчика</div>
             <div class="value fixed">ООО «РН-Юганскнефтегаз»</div>
         </div>
-        <!-- Показывается только при Опасных -->
         <div class="field hidden" id="stopField">
             <div class="label">Работы остановлены?</div>
             <div class="value" id="stop"></div>
@@ -389,79 +399,153 @@
             </div>
             <div class="value" id="correction"></div>
         </div>
-        <button class="copy-all-btn" onclick="copyAll()">Скопировать всё</button>
         <div class="counter" id="counter"></div>
     </div>
-
     <div class="toast" id="toast">Скопировано!</div>
-
-    <!-- === 4 карточки ссылок на сайты компании ===
-         Чтобы настроить:
-         1. Поменяйте href="..." на нужную ссылку
-         2. Положите скриншот как card1.jpg, card2.jpg, card3.jpg, card4.jpg
-         3. Измените название и описание
-    -->
     <div class="links-section">
-        <div class="links-title">Другие сервисы компании</div>
+        <div class="links-title">Рабочие сайты</div>
         <div class="links-grid">
-            <a class="link-card" href="https://example.com/site1" target="_blank" rel="noopener">
+            <a class="link-card" href="https://lk.tofsgroup.ru/" target="_blank" rel="noopener">
                 <img src="card1.jpg" alt="" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22200%22%3E%3Crect fill=%22%231e293b%22 width=%22400%22 height=%22200%22/%3E%3Ctext fill=%22%2364748b%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EСкрин сайта%3C/text%3E%3C/svg%3E'">
                 <div class="link-body">
-                    <div class="link-name">Сервис 1</div>
-                    <div class="link-desc">Краткое описание сервиса</div>
+                    <div class="link-name">iConnect</div>
+                    <div class="link-desc"></div>
                 </div>
             </a>
-            <a class="link-card" href="https://example.com/site2" target="_blank" rel="noopener">
+            <a class="link-card" href="https://networking.tofsgroup.ru" target="_blank" rel="noopener">
                 <img src="card2.jpg" alt="" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22200%22%3E%3Crect fill=%22%231e293b%22 width=%22400%22 height=%22200%22/%3E%3Ctext fill=%22%2364748b%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EСкрин сайта%3C/text%3E%3C/svg%3E'">
                 <div class="link-body">
-                    <div class="link-name">Сервис 2</div>
-                    <div class="link-desc">Краткое описание сервиса</div>
+                    <div class="link-name">Нетворкинг</div>
+                    <div class="link-desc"></div>
                 </div>
             </a>
-            <a class="link-card" href="https://example.com/site3" target="_blank" rel="noopener">
+            <a class="link-card" href="https://library.tofsgroup.ru/main/company-docs/" target="_blank" rel="noopener">
                 <img src="card3.jpg" alt="" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22200%22%3E%3Crect fill=%22%231e293b%22 width=%22400%22 height=%22200%22/%3E%3Ctext fill=%22%2364748b%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EСкрин сайта%3C/text%3E%3C/svg%3E'">
                 <div class="link-body">
-                    <div class="link-name">Сервис 3</div>
-                    <div class="link-desc">Краткое описание сервиса</div>
+                    <div class="link-name">LiBRARY</div>
+                    <div class="link-desc"></div>
                 </div>
             </a>
-            <a class="link-card" href="https://example.com/site4" target="_blank" rel="noopener">
+            <a class="link-card" href="https://obt.continent.ru/" target="_blank" rel="noopener">
                 <img src="card4.jpg" alt="" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22200%22%3E%3Crect fill=%22%231e293b%22 width=%22400%22 height=%22200%22/%3E%3Ctext fill=%22%2364748b%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EСкрин сайта%3C/text%3E%3C/svg%3E'">
                 <div class="link-body">
-                    <div class="link-name">Сервис 4</div>
-                    <div class="link-desc">Краткое описание сервиса</div>
+                    <div class="link-name">Continent</div>
+                    <div class="link-desc"></div>
                 </div>
             </a>
         </div>
     </div>
 
+    <div class="stats-section">
+        <div class="stats-title">Статистика генераций</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="statDay">0</div>
+                <div class="stat-label">За сегодня</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statWeek">0</div>
+                <div class="stat-label">За неделю</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statMonth">0</div>
+                <div class="stat-label">За месяц</div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let data = [];
-        let filterMode = 'safe'; // 'safe' | 'danger'
+        let filterMode = 'safe';
 
-        // Текущий сезон: 1-зима, 2-весна, 3-лето, 4-осень
+        // Глобальный счётчик через CountAPI (общий для всех устройств и пользователей)
+        // namespace уникальный для вашего сайта — не меняйте, иначе счётчик обнулится
+        const STATS_NS = 'tofsgroup-sos-generator';
+
+        function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+        function getStatKeys() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = pad(now.getMonth() + 1);
+            const d = pad(now.getDate());
+            // неделя ISO-подобная: год + номер недели с понедельника
+            const day = now.getDay() || 7; // 1=пн … 7=вс
+            const thursday = new Date(now);
+            thursday.setDate(now.getDate() + 4 - day);
+            const yearStart = new Date(thursday.getFullYear(), 0, 1);
+            const weekNo = Math.ceil((((thursday - yearStart) / 86400000) + 1) / 7);
+            return {
+                day: 'day-' + y + '-' + m + '-' + d,
+                week: 'week-' + thursday.getFullYear() + '-W' + pad(weekNo),
+                month: 'month-' + y + '-' + m
+            };
+        }
+
+        async function countApi(action, key) {
+            // action: 'hit' (увеличить) или 'get' (прочитать)
+            const url = 'https://abacus.jasoncameron.dev/' + action + '/' + STATS_NS + '/' + key;
+            const r = await fetch(url);
+            if (!r.ok) throw new Error('counter ' + r.status);
+            const j = await r.json();
+            return typeof j.value === 'number' ? j.value : 0;
+        }
+
+        async function recordGenerateClick() {
+            const keys = getStatKeys();
+            try {
+                // параллельно увеличиваем день / неделю / месяц
+                await Promise.all([
+                    countApi('hit', keys.day),
+                    countApi('hit', keys.week),
+                    countApi('hit', keys.month)
+                ]);
+            } catch (e) {
+                console.warn('Не удалось обновить глобальный счётчик:', e);
+            }
+            updateStatsUI();
+        }
+
+        async function updateStatsUI() {
+            const keys = getStatKeys();
+            const dayEl = document.getElementById('statDay');
+            const weekEl = document.getElementById('statWeek');
+            const monthEl = document.getElementById('statMonth');
+            try {
+                const [day, week, month] = await Promise.all([
+                    countApi('get', keys.day),
+                    countApi('get', keys.week),
+                    countApi('get', keys.month)
+                ]);
+                dayEl.textContent = day;
+                weekEl.textContent = week;
+                monthEl.textContent = month;
+            } catch (e) {
+                dayEl.textContent = '—';
+                weekEl.textContent = '—';
+                monthEl.textContent = '—';
+                console.warn('Не удалось загрузить статистику:', e);
+            }
+        }
+
         function getCurrentSeason() {
-            const m = new Date().getMonth() + 1; // 1-12
+            const m = new Date().getMonth() + 1;
             if (m === 12 || m <= 2) return '1';
             if (m >= 3 && m <= 5) return '2';
             if (m >= 6 && m <= 8) return '3';
-            return '4'; // 9-11 осень
+            return '4';
         }
-
         const seasonNames = { '1': 'Зима', '2': 'Весна', '3': 'Лето', '4': 'Осень' };
-
         function isSeasonMatch(itemSeason, current) {
             if (!itemSeason || itemSeason === 'all') return true;
-            // поддержка "1,4" или массива
             const parts = String(itemSeason).split(/[,;\s]+/).map(s => s.trim()).filter(Boolean);
             return parts.includes(current);
         }
-
         function isDangerous(action) {
             const a = (action || '').toLowerCase();
+            if (a.includes('безопасн')) return false;
             return a.includes('опасн');
         }
-
         function setFilter(mode) {
             filterMode = mode;
             const btnSafe = document.getElementById('btnSafe');
@@ -479,7 +563,6 @@
             }
             updateStatus();
         }
-
         function getFiltered() {
             const season = getCurrentSeason();
             return data.filter(item => {
@@ -488,14 +571,12 @@
                 return filterMode === 'danger' ? danger : !danger;
             });
         }
-
         function updateStatus() {
             const filtered = getFiltered();
             const season = getCurrentSeason();
             const modeLabel = filterMode === 'danger' ? 'опасных' : 'безопасных';
         }
 
-        // ===================== ВАРИАЦИИ ТЕКСТА =====================
         const synonyms = {
             "обнаружил": ["заметил", "выявил", "зафиксировал", "увидел"],
             "обнаружила": ["заметила", "выявила", "зафиксировала", "увидела"],
@@ -540,25 +621,16 @@
             "коллега": ["сотрудник", "работник", "напарник"],
             "коллеги": ["сотрудники", "работники", "напарники"],
         };
-
         const phraseVariants = {
-            "нет нареканий по работе": [
-                "Нареканий по работе нет", "Претензий к работе нет",
-                "Работа выполнена без замечаний", "Замечаний и нареканий нет"
-            ],
-            "Нет нареканий по работе": [
-                "Нареканий по работе нет", "Претензий к работе нет",
-                "Работа выполнена без замечаний", "Замечаний нет"
-            ],
+            "нет нареканий по работе": ["Нареканий по работе нет", "Претензий к работе нет", "Работа выполнена без замечаний", "Замечаний и нареканий нет"],
+            "Нет нареканий по работе": ["Нареканий по работе нет", "Претензий к работе нет", "Работа выполнена без замечаний", "Замечаний нет"],
             "нет нареканий": ["Нареканий нет", "Претензий нет", "Замечаний нет"],
             "Нет нареканий": ["Нареканий нет", "Претензий нет", "Замечаний нет"],
             "Не требуются": ["Корректирующие действия не требуются", "Дополнительных мер не требуется", "Меры не требуются"],
             "не требуются": ["Корректирующие действия не требуются", "Дополнительных мер не требуется"],
             "Корректирующие действия не требуются": ["Дополнительных мер не требуется", "Меры не требуются", "Корректировка не нужна"],
         };
-
         function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
         function rephrase(text) {
             if (!text || text.trim() === '' || text === '—') return text;
             let result = text.trim();
@@ -582,7 +654,8 @@
             return result;
         }
 
-        // ===================== ЗАГРУЗКА =====================
+        updateStatsUI();
+
         fetch('data.json')
             .then(r => {
                 if (!r.ok) throw new Error('Не удалось загрузить data.json');
@@ -593,10 +666,14 @@
                 document.getElementById('genBtn').disabled = false;
                 document.getElementById('genBtn').textContent = 'Сгенерировать';
                 setFilter('safe');
+                updateStatsUI();
             })
             .catch(err => {
-                document.getElementById('status').textContent = 'Ошибка: ' + err.message;
-                document.getElementById('status').classList.add('error');
+                const el = document.getElementById('status');
+                if (el) {
+                    el.textContent = 'Ошибка: ' + err.message;
+                    el.classList.add('error');
+                }
                 document.getElementById('genBtn').textContent = 'Ошибка загрузки';
             });
 
@@ -608,20 +685,14 @@
             }
             const item = filtered[Math.floor(Math.random() * filtered.length)];
             const danger = isDangerous(item.action);
-
             const actionEl = document.getElementById('action');
             actionEl.textContent = item.action || '—';
             actionEl.className = 'value ' + (danger ? 'danger' : 'highlight');
-
             document.getElementById('category').textContent = item.category || '—';
             document.getElementById('description').textContent = rephrase(item.description || '—');
             document.getElementById('correction').textContent = rephrase(item.correction || '—');
-
-            // Наблюдали в отношении
             const observed = item.observed_in_relation_to || item['observed in relation to'] || 'Группа компаний Технологии ОФС';
             document.getElementById('observed').textContent = observed;
-
-            // Подрядная организация
             const orgField = document.getElementById('orgField');
             const org = (item.organization || '').trim();
             if (observed.toLowerCase().includes('подрядн') && org) {
@@ -630,8 +701,6 @@
             } else {
                 orgField.classList.add('hidden');
             }
-
-            // Работы остановлены?
             const stopField = document.getElementById('stopField');
             if (danger) {
                 const stopVal = (item.Stop || item.stop || '').trim() || '—';
@@ -641,11 +710,9 @@
             } else {
                 stopField.classList.add('hidden');
             }
-
-
             document.getElementById('resultCard').classList.add('visible');
+            recordGenerateClick();
         }
-
         function copyField(id, btn) {
             const text = document.getElementById(id).textContent;
             navigator.clipboard.writeText(text).then(() => {
@@ -656,33 +723,6 @@
                     btn.textContent = original;
                     btn.classList.remove('copied');
                 }, 1500);
-            });
-        }
-
-        function copyAll() {
-            const orgField = document.getElementById('orgField');
-            const stopField = document.getElementById('stopField');
-            let lines = [
-                'Город наблюдения: г. Нефтеюганск',
-                'Опасные/безопасные действия или условия: ' + document.getElementById('action').textContent,
-                'Место наблюдения: Месторождение (Field)',
-                'Наблюдали в отношении: ' + document.getElementById('observed').textContent,
-            ];
-            if (!orgField.classList.contains('hidden')) {
-                lines.push('Подрядная организация: ' + document.getElementById('organization').textContent);
-            }
-            lines.push('Категория: ' + document.getElementById('category').textContent);
-            lines.push('Выберите заказчика: ООО «РН-Юганскнефтегаз»');
-            if (!stopField.classList.contains('hidden')) {
-                lines.push('Работы остановлены?: ' + document.getElementById('stop').textContent);
-            }
-            lines.push('Опишите наблюдение: ' + document.getElementById('description').textContent);
-            lines.push('Корректирующие действия: ' + document.getElementById('correction').textContent);
-
-            navigator.clipboard.writeText(lines.join('\n')).then(() => {
-                const toast = document.getElementById('toast');
-                toast.classList.add('show');
-                setTimeout(() => toast.classList.remove('show'), 2000);
             });
         }
     </script>
