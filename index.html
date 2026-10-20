@@ -66,8 +66,8 @@
             z-index: 1;
             pointer-events: none;
         }
-        /* Весь контент выше фона */
-        body > *:not(.bg-photo):not(.bg-overlay) {
+        /* Контент выше фона; модалку и toast не трогаем — у них свой z-index */
+        body > *:not(.bg-photo):not(.bg-overlay):not(.modal-overlay):not(.toast) {
             position: relative;
             z-index: 2;
         }
@@ -249,7 +249,7 @@
             opacity: 0;
             transition: opacity 0.3s;
             pointer-events: none;
-            z-index: 100;
+            z-index: 9998;
             box-shadow: 0 4px 20px var(--accent-glow);
         }
         .toast.show { opacity: 1; }
@@ -497,7 +497,7 @@
             position: fixed;
             inset: 0;
             background: rgba(0,0,0,0.75);
-            z-index: 200;
+            z-index: 9999;
             display: none;
             align-items: center;
             justify-content: center;
