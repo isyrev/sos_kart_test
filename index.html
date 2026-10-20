@@ -695,14 +695,17 @@
             { name: 'CMP', desc: 'Онлайн курсы', url: 'https://cmp.tofsgroup.ru/courses', img: 'card6.jpg' }
         ];
 
-        let carouselIndex = 0;
-        let dragOffset = 0; // px offset while dragging / momentum
+        // selectedIndex — выделенная карточка (описание сверху)
+        // scrollPx — позиция прокрутки карусели (независимо от выбора)
+        let selectedIndex = 0;
+        let scrollPx = 0;
+        let dragOffset = 0;
         let isDragging = false;
         let dragStartX = 0;
-        let dragStartOffset = 0;
+        let dragStartScroll = 0;
         let lastX = 0;
         let lastT = 0;
-        let velocity = 0; // px/ms
+        let velocity = 0;
         let momentumId = null;
         let suppressClick = false;
 
@@ -721,8 +724,7 @@
         function getItemStep() {
             const items = document.querySelectorAll('.carousel-item');
             if (!items.length) return 0;
-            const gap = 12;
-            return items[0].getBoundingClientRect().width + gap;
+            return items[0].getBoundingClientRect().width + 12;
         }
 
         function maxScrollPx() {
@@ -731,45 +733,48 @@
             return Math.max(0, (SITES.length - vis) * step);
         }
 
-        function indexToOffset(index) {
-            const step = getItemStep();
-            const vis = getVisibleCount();
-            let offsetIndex = index;
-            const maxOffset = Math.max(0, SITES.length - vis);
-            if (offsetIndex > maxOffset) offsetIndex = maxOffset;
-            return offsetIndex * step;
+        function clampScroll(px) {
+            return Math.max(0, Math.min(maxScrollPx(), px));
         }
 
         function applyTransform(animate) {
             const track = document.getElementById('carouselTrack');
             if (animate) track.classList.add('animate');
             else track.classList.remove('animate');
-            const base = indexToOffset(carouselIndex);
-            const x = base - dragOffset;
-            // clamp soft edges while dragging
-            const max = maxScrollPx();
-            let px = x;
-            if (!isDragging && momentumId === null) {
-                px = Math.max(0, Math.min(max, base));
-            }
+            const px = clampScroll(scrollPx - dragOffset);
             track.style.transform = 'translateX(-' + px + 'px)';
         }
 
-        function updateInfoAndDots() {
-            const site = SITES[carouselIndex];
+        function updateSelectionUI() {
+            const site = SITES[selectedIndex];
             document.getElementById('carouselName').textContent = site.name;
             document.getElementById('carouselDesc').innerHTML =
                 site.desc + (site.url ? ' · <a href="' + site.url + '" target="_blank" rel="noopener">Открыть</a>' : '');
-            document.querySelectorAll('.carousel-item').forEach((el, i) => el.classList.toggle('active', i === carouselIndex));
-            document.querySelectorAll('.carousel-dot').forEach((el, i) => el.classList.toggle('active', i === carouselIndex));
+            document.querySelectorAll('.carousel-item').forEach((el, i) => el.classList.toggle('active', i === selectedIndex));
+            document.querySelectorAll('.carousel-dot').forEach((el, i) => el.classList.toggle('active', i === selectedIndex));
         }
 
-        function goToCarousel(index, animate) {
+        /** Только выделить карточку — карусель НЕ двигается */
+        function selectCard(index) {
+            const n = SITES.length;
+            selectedIndex = ((index % n) + n) % n;
+            updateSelectionUI();
+        }
+
+        /** Только прокрутить — выбор НЕ меняется */
+        function scrollBySteps(delta, animate) {
             cancelMomentum();
             dragOffset = 0;
-            const n = SITES.length;
-            carouselIndex = ((index % n) + n) % n;
-            updateInfoAndDots();
+            const step = getItemStep() || 1;
+            scrollPx = clampScroll(scrollPx + delta * step);
+            applyTransform(animate !== false);
+        }
+
+        function scrollToNearest(animate) {
+            const step = getItemStep() || 1;
+            const idx = Math.round(scrollPx / step);
+            scrollPx = clampScroll(idx * step);
+            dragOffset = 0;
             applyTransform(animate !== false);
         }
 
@@ -778,52 +783,6 @@
                 cancelAnimationFrame(momentumId);
                 momentumId = null;
             }
-        }
-
-        function snapFromPosition(currentPx, vel) {
-            // currentPx = visual scroll position
-            const step = getItemStep();
-            if (!step) return;
-            let targetIndex = Math.round(currentPx / step);
-            // add velocity boost: stronger swipe → more slides
-            const boost = Math.round(vel * 180 / step); // tune
-            targetIndex += boost;
-            const vis = getVisibleCount();
-            const maxIdx = Math.max(0, SITES.length - 1);
-            targetIndex = Math.max(0, Math.min(maxIdx, targetIndex));
-            goToCarousel(targetIndex, true);
-        }
-
-        function startMomentum(startVel) {
-            cancelMomentum();
-            let v = startVel; // px per ms, positive = swipe left (content moves left = index++)
-            const step = getItemStep();
-            let pos = indexToOffset(carouselIndex) - dragOffset;
-
-            function frame(t) {
-                // friction
-                v *= 0.95;
-                pos += v * 16; // ~16ms frame
-                const max = maxScrollPx();
-                if (pos < 0) { pos = 0; v = 0; }
-                if (pos > max) { pos = max; v = 0; }
-
-                // map pos back to dragOffset relative to carouselIndex base
-                dragOffset = indexToOffset(carouselIndex) - pos;
-                applyTransform(false);
-
-                if (Math.abs(v) > 0.05) {
-                    momentumId = requestAnimationFrame(frame);
-                } else {
-                    momentumId = null;
-                    dragOffset = 0;
-                    // snap to nearest
-                    let idx = Math.round(pos / step);
-                    idx = Math.max(0, Math.min(SITES.length - 1, idx));
-                    goToCarousel(idx, true);
-                }
-            }
-            momentumId = requestAnimationFrame(frame);
         }
 
         function buildCarousel() {
@@ -840,13 +799,14 @@
                 a.dataset.index = i;
                 a.innerHTML = '<img src="' + site.img + '" alt="" draggable="false" onerror="this.src=\'' + placeholderImg() + '\'">';
                 a.addEventListener('click', (e) => {
-                    if (suppressClick) {
-                        e.preventDefault();
-                        return;
-                    }
-                    if (carouselIndex !== i) {
-                        e.preventDefault();
-                        goToCarousel(i, true);
+                    e.preventDefault();
+                    if (suppressClick) return;
+                    if (selectedIndex !== i) {
+                        // первый клик — только выделить
+                        selectCard(i);
+                    } else {
+                        // второй клик по уже выбранной — открыть сайт
+                        window.open(site.url, '_blank', 'noopener');
                     }
                 });
                 track.appendChild(a);
@@ -854,23 +814,32 @@
                 dot.type = 'button';
                 dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
                 dot.setAttribute('aria-label', 'Слайд ' + (i + 1));
-                dot.onclick = () => goToCarousel(i, true);
+                // точка только выделяет, без прокрутки
+                dot.onclick = () => selectCard(i);
                 dots.appendChild(dot);
             });
-            updateInfoAndDots();
+            selectedIndex = 0;
+            scrollPx = 0;
+            dragOffset = 0;
+            updateSelectionUI();
             applyTransform(false);
             setupDrag();
         }
 
         function setupDrag() {
             const outer = document.getElementById('carouselOuter');
+            let pointerDownTarget = null;
+            let didDrag = false;
 
-            function onDown(clientX) {
+            function onDown(clientX, target) {
                 cancelMomentum();
                 isDragging = true;
+                didDrag = false;
                 suppressClick = false;
+                pointerDownTarget = target;
                 dragStartX = clientX;
-                dragStartOffset = dragOffset;
+                dragStartScroll = scrollPx;
+                dragOffset = 0;
                 lastX = clientX;
                 lastT = performance.now();
                 velocity = 0;
@@ -881,16 +850,18 @@
             function onMove(clientX) {
                 if (!isDragging) return;
                 const dx = clientX - dragStartX;
-                if (Math.abs(dx) > 6) suppressClick = true;
-                // drag right → negative index direction → decrease visual scroll
-                dragOffset = dragStartOffset + dx;
+                if (Math.abs(dx) > 8) {
+                    didDrag = true;
+                    suppressClick = true;
+                }
+                // палец вправо → контент вправо → scroll уменьшается
+                dragOffset = dx;
                 const now = performance.now();
                 const dt = now - lastT;
-                if (dt > 0) {
-                    velocity = (clientX - lastX) / dt; // px/ms
-                }
+                if (dt > 0) velocity = (clientX - lastX) / dt;
                 lastX = clientX;
                 lastT = now;
+                // временная позиция: scrollPx - dragOffset
                 applyTransform(false);
             }
 
@@ -898,37 +869,56 @@
                 if (!isDragging) return;
                 isDragging = false;
                 outer.classList.remove('dragging');
-                // velocity: positive = finger moved right = content should go previous
-                // we want swipe left (negative velocity in our lastX) to go next
-                const v = -velocity; // invert: swipe left → positive → next
+
+                // Клик без прокрутки — только выбор карточки
+                if (!didDrag) {
+                    dragOffset = 0;
+                    applyTransform(false);
+                    const el = (pointerDownTarget && pointerDownTarget.closest)
+                        ? pointerDownTarget.closest('.carousel-item')
+                        : null;
+                    if (el && el.dataset.index !== undefined) {
+                        const i = parseInt(el.dataset.index, 10);
+                        if (selectedIndex !== i) {
+                            selectCard(i);
+                            suppressClick = true; // блокируем дубль в click
+                        } else {
+                            // второй клик — открываем сайт сразу
+                            window.open(SITES[i].url, '_blank', 'noopener');
+                            suppressClick = true;
+                        }
+                    }
+                    setTimeout(() => { suppressClick = false; }, 80);
+                    pointerDownTarget = null;
+                    return;
+                }
+
+                // Был drag — фиксируем scroll, выбор не трогаем
+                scrollPx = clampScroll(scrollPx - dragOffset);
+                dragOffset = 0;
+
+                const v = -velocity; // свайп влево → следующий
                 const absV = Math.abs(v);
                 const step = getItemStep() || 1;
-                const currentPx = indexToOffset(carouselIndex) - dragOffset;
 
                 if (absV > 0.3) {
-                    // strong swipe: momentum + extra slides by speed
-                    const extra = Math.min(3, Math.floor(absV * 2.5));
-                    let target = Math.round(currentPx / step) + (v > 0 ? extra : -extra);
-                    if (v > 0 && extra === 0) target = Math.ceil(currentPx / step);
-                    if (v < 0 && extra === 0) target = Math.floor(currentPx / step);
-                    target = Math.max(0, Math.min(SITES.length - 1, target));
-                    dragOffset = 0;
-                    goToCarousel(target, true);
+                    const extra = Math.min(3, Math.max(1, Math.floor(absV * 2.5)));
+                    const dir = v > 0 ? 1 : -1;
+                    scrollPx = clampScroll(scrollPx + dir * extra * step);
+                    // snap к шагу
+                    scrollPx = clampScroll(Math.round(scrollPx / step) * step);
+                    applyTransform(true);
                 } else {
-                    // weak: snap nearest
-                    let target = Math.round(currentPx / step);
-                    target = Math.max(0, Math.min(SITES.length - 1, target));
-                    dragOffset = 0;
-                    goToCarousel(target, true);
+                    scrollToNearest(true);
                 }
-                setTimeout(() => { suppressClick = false; }, 50);
+                setTimeout(() => { suppressClick = false; }, 80);
+                pointerDownTarget = null;
             }
 
-            // Pointer events (mouse + touch unified)
             outer.addEventListener('pointerdown', (e) => {
                 if (e.button !== undefined && e.button !== 0) return;
                 outer.setPointerCapture(e.pointerId);
-                onDown(e.clientX);
+                onDown(e.clientX, e.target);
             });
             outer.addEventListener('pointermove', (e) => {
                 if (!isDragging) return;
@@ -936,16 +926,16 @@
             });
             outer.addEventListener('pointerup', onUp);
             outer.addEventListener('pointercancel', onUp);
-            // prevent native image drag
             outer.addEventListener('dragstart', (e) => e.preventDefault());
         }
 
-        document.getElementById('carouselPrev').onclick = () => goToCarousel(carouselIndex - 1, true);
-        document.getElementById('carouselNext').onclick = () => goToCarousel(carouselIndex + 1, true);
+        document.getElementById('carouselPrev').onclick = () => scrollBySteps(-1, true);
+        document.getElementById('carouselNext').onclick = () => scrollBySteps(1, true);
         window.addEventListener('resize', () => {
             dragOffset = 0;
+            scrollPx = clampScroll(scrollPx);
             applyTransform(false);
-            updateInfoAndDots();
+            updateSelectionUI();
         });
 
         // ===================== ИНСТРУКЦИИ =====================
@@ -1095,6 +1085,7 @@
             const season = getCurrentSeason();
             const modeLabel = filterMode === 'danger' ? 'опасных' : 'безопасных';
             const el = document.getElementById('status');
+            if (el) el.textContent = 'Сезон: ' + seasonNames[season] + ' · Доступно ' + filtered.length + ' ' + modeLabel + ' заявок';
         }
         const synonyms = {
             "обнаружил": ["заметил", "выявил", "зафиксировал", "увидел"],
