@@ -1095,7 +1095,6 @@
             const season = getCurrentSeason();
             const modeLabel = filterMode === 'danger' ? 'опасных' : 'безопасных';
             const el = document.getElementById('status');
-            if (el) el.textContent = 'Сезон: ' + seasonNames[season] + ' · Доступно ' + filtered.length + ' ' + modeLabel + ' заявок';
         }
         const synonyms = {
             "обнаружил": ["заметил", "выявил", "зафиксировал", "увидел"],
