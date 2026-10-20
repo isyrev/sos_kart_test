@@ -21,9 +21,9 @@
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html {
-            background: var(--bg-dark);
+            background-color: #0b1220;
             overscroll-behavior: none;
-            height: 100%;
+            min-height: 100%;
         }
         body {
             font-family: 'Comic Sans MS', system-ui, -apple-system, sans-serif;
@@ -37,36 +37,39 @@
             padding-bottom: max(48px, env(safe-area-inset-bottom));
             position: relative;
             overflow-x: hidden;
-            background: var(--bg-dark);
+            /* фон не перекрывает картинку: только запасной цвет */
+            background-color: #0b1220;
             overscroll-behavior-y: none;
             -webkit-overflow-scrolling: touch;
         }
+        /* Фон: поверх body, под контентом (не z-index: -1) */
         .bg-photo {
             position: fixed;
-            inset: 0;
-            background: url('bg.jpg') center/cover no-repeat;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('bg.jpg') center center / cover no-repeat;
             filter: blur(5px) brightness(0.75);
-            transform: scale(1.08);
-            z-index: -2;
-            /* чуть больше экрана, чтобы при overscroll не было белого */
-            top: -2%;
-            left: -2%;
-            right: -2%;
-            bottom: -2%;
-            width: 104%;
-            height: 104%;
+            transform: scale(1.05);
+            transform-origin: center center;
+            z-index: 0;
+            pointer-events: none;
         }
         .bg-overlay {
             position: fixed;
-            inset: 0;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: linear-gradient(160deg, #0b1220 0%, rgba(11,18,32,0.92) 40%, rgba(3,40,35,0.85) 100%);
-            z-index: -1;
-            top: -2%;
-            left: -2%;
-            right: -2%;
-            bottom: -2%;
-            width: 104%;
-            height: 104%;
+            z-index: 1;
+            pointer-events: none;
+        }
+        /* Весь контент выше фона */
+        body > *:not(.bg-photo):not(.bg-overlay) {
+            position: relative;
+            z-index: 2;
         }
         .header {
             text-align: center;
@@ -940,9 +943,9 @@
 
         // ===================== ИНСТРУКЦИИ =====================
         const INSTRUCTIONS = [
-            { title: 'Подключение Bitrix24', meta: 'PDF', type: 'pdf', src: 'instructions/bitrix24/index.html' },
-            { title: 'Инструкция в системе бронирования (октябрь 2026)', meta: 'PDF', type: 'pdf', src: 'instructions/continent_10.26/index.html' },
-            { title: 'Как заполнить Авансовый отчет в 1С', meta: 'PDF', type: 'pdf', src: 'instructions/1c_avans/index.html' }
+            { title: 'Подключение Bitrix24', meta: 'PDF · инструкция', type: 'pdf', src: 'instructions/bitrix24/index.html' },
+            { title: 'Инструкция в системе бронирования (октябрь 2026)', meta: 'PDF · инструкция', type: 'pdf', src: 'instructions/1c_avans/index.html' },
+            { title: 'Как заполнить Авансовый отчет в 1С', meta: 'PDF · инструкция', type: 'pdf', src: 'instructions/continent_10.26/index.html' }
         ];
         const HELP_PREVIEW = 5;
         let helpExpanded = false;
@@ -1085,7 +1088,6 @@
             const season = getCurrentSeason();
             const modeLabel = filterMode === 'danger' ? 'опасных' : 'безопасных';
             const el = document.getElementById('status');
-            if (el) el.textContent = 'Сезон: ' + seasonNames[season] + ' · Доступно ' + filtered.length + ' ' + modeLabel + ' заявок';
         }
         const synonyms = {
             "обнаружил": ["заметил", "выявил", "зафиксировал", "увидел"],
