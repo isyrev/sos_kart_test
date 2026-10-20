@@ -35,7 +35,7 @@
             position: fixed;
             inset: 0;
             background: url('bg.jpg') center/cover no-repeat;
-            filter: blur(2px) brightness(0.75);
+            filter: blur(5px) brightness(0.75);
             transform: scale(1.05);
             z-index: -2;
         }
@@ -92,7 +92,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
             letter-spacing: 0.3px;
-            font-family: 'Comic Sans MS';
+            font-family: 'Comic Sans MS', system-ui, sans-serif;
         }
         .filter-btn {
             background: rgba(30, 41, 59, 0.8);
@@ -109,9 +109,7 @@
             border-color: transparent;
             box-shadow: 0 4px 18px var(--accent-glow);
         }
-        .filter-btn.dimmed {
-            opacity: 0.4;
-        }
+        .filter-btn.dimmed { opacity: 0.4; }
         .generate-btn {
             background: linear-gradient(135deg, var(--accent), var(--accent-hover));
             color: var(--white);
@@ -196,6 +194,7 @@
             white-space: nowrap;
             transition: all 0.15s;
             flex-shrink: 0;
+            font-family: inherit;
         }
         .copy-mini:hover {
             background: var(--accent-dim);
@@ -228,108 +227,322 @@
             box-shadow: 0 4px 20px var(--accent-glow);
         }
         .toast.show { opacity: 1; }
-        .links-section {
+
+        /* === Карусель сайтов === */
+        .carousel-section {
             margin-top: 56px;
             width: 100%;
             max-width: 960px;
         }
-        .links-title {
+        .section-title {
             text-align: center;
             font-size: 1.1rem;
             color: var(--text-muted);
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             font-weight: 500;
         }
-        .links-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
+        .carousel-info {
+            text-align: center;
+            min-height: 64px;
+            margin-bottom: 16px;
+            padding: 0 12px;
         }
-        .link-card {
+        .carousel-info-name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 4px;
+        }
+        .carousel-info-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+        .carousel-info a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .carousel-info a:hover { text-decoration: underline; }
+
+        .carousel-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .carousel-btn {
+            flex-shrink: 0;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--white);
+            font-size: 1.4rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            backdrop-filter: blur(8px);
+        }
+        .carousel-btn:hover {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+            color: var(--accent);
+        }
+        .carousel-track-outer {
+            overflow: hidden;
+            flex: 1;
+            border-radius: 14px;
+        }
+        .carousel-track {
+            display: flex;
+            gap: 12px;
+            transition: transform 0.35s ease;
+            will-change: transform;
+        }
+        .carousel-item {
+            flex: 0 0 calc((100% - 48px) / 5);
+            min-width: 0;
+            aspect-ratio: 16 / 10;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: border-color 0.2s, transform 0.2s, opacity 0.2s;
+            background: #1e293b;
+            text-decoration: none;
+            display: block;
+            opacity: 0.55;
+        }
+        .carousel-item.active {
+            border-color: var(--accent);
+            opacity: 1;
+            box-shadow: 0 0 0 1px var(--accent-glow), 0 8px 24px rgba(0,0,0,0.35);
+            transform: scale(1.02);
+        }
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .carousel-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .carousel-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(100, 116, 139, 0.5);
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .carousel-dot.active {
+            background: var(--accent);
+            transform: scale(1.25);
+        }
+
+        /* === Инструкции === */
+        .help-section, .contacts-section {
+            margin-top: 48px;
+            width: 100%;
+            max-width: 720px;
+        }
+        .help-list {
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 14px;
             overflow: hidden;
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.25s ease;
             backdrop-filter: blur(10px);
+        }
+        .help-item {
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+            text-decoration: none;
+            color: var(--text);
+            transition: background 0.15s;
+            cursor: pointer;
         }
-        .link-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--accent);
-            box-shadow: 0 8px 28px var(--accent-glow);
+        .help-item:last-child { border-bottom: none; }
+        .help-item:hover {
+            background: rgba(3, 190, 147, 0.08);
         }
-        .link-card img {
-            width: 100%;
-            height: 120px;
-            object-fit: cover;
-            background: #1e293b;
-            display: block;
-        }
-        .link-card .link-body {
-            padding: 14px 16px;
-        }
-        .link-card .link-name {
+        .help-item-title {
             font-weight: 600;
             font-size: 0.95rem;
-            color: var(--white);
-            margin-bottom: 4px;
         }
-        .link-card .link-desc {
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            line-height: 1.35;
-        }
-        .stats-section {
-            margin-top: 48px;
-            width: 100%;
-            max-width: 720px;
-            text-align: center;
-        }
-        .stats-title {
-            text-align: center;
-            font-size: 1.1rem;
-            color: var(--text-muted);
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
-        .stat-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px 12px;
-            backdrop-filter: blur(10px);
-        }
-        .stat-value {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: var(--accent);
-            line-height: 1.2;
-        }
-        .stat-label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-        .stats-note {
-            margin-top: 12px;
+        .help-item-meta {
             font-size: 0.75rem;
             color: var(--text-dim);
+            margin-top: 2px;
+        }
+        .help-item-arrow {
+            color: var(--accent);
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .help-actions {
+            text-align: center;
+            margin-top: 14px;
+        }
+        .show-all-btn {
+            background: rgba(30, 41, 59, 0.9);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 10px 22px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .show-all-btn:hover {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--white);
+        }
+        .help-item.hidden-help { display: none; }
+        .help-list.expanded .help-item.hidden-help { display: flex; }
+
+        /* === Контакты === */
+.contacts-grid {
+    display: grid;
+    gap: 12px;
+}
+.contact-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    backdrop-filter: blur(10px);
+}
+.contact-dept {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+.contact-name {
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 4px;
+}
+.contact-detail {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+}
+.contact-detail a {
+    color: var(--accent);
+    text-decoration: none;
+}
+.contact-description {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+}
+        .contact-detail a:hover { text-decoration: underline; }
+
+        /* PDF viewer modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            width: 100%;
+            max-width: 960px;
+            height: min(90vh, 900px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(51,65,85,0.6);
+            gap: 12px;
+        }
+        .modal-title {
+            font-weight: 600;
+            color: var(--white);
+            font-size: 0.95rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .modal-close {
+            background: rgba(30,41,59,0.9);
+            border: 1px solid rgba(100,116,139,0.5);
+            color: var(--text);
+            border-radius: 8px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-family: inherit;
+            flex-shrink: 0;
+        }
+        .modal-close:hover {
+            border-color: var(--accent);
+            color: var(--white);
+        }
+        .modal-body {
+            flex: 1;
+            background: #1e293b;
+        }
+        .modal-body iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        @media (max-width: 900px) {
+            .carousel-item {
+                flex: 0 0 calc((100% - 36px) / 4);
+            }
+        }
+        @media (max-width: 700px) {
+            .carousel-item {
+                flex: 0 0 calc((100% - 24px) / 3);
+            }
         }
         @media (max-width: 520px) {
             .header h1 { font-size: 1.45rem; }
             .filter-btn, .generate-btn { width: 100%; max-width: 280px; }
             .filter-row { width: 100%; flex-direction: column; align-items: center; }
             .card { padding: 20px 18px; }
-            .stats-grid { grid-template-columns: 1fr; max-width: 240px; margin: 0 auto; }
+            .carousel-item {
+                flex: 0 0 calc((100% - 12px) / 2);
+            }
+            .carousel-btn { width: 36px; height: 36px; font-size: 1.1rem; }
         }
     </style>
 </head>
@@ -402,54 +615,48 @@
         <div class="counter" id="counter"></div>
     </div>
     <div class="toast" id="toast">Скопировано!</div>
-    <div class="links-section">
-        <div class="links-title">Рабочие сайты</div>
-        <div class="links-grid">
-            <a class="link-card" href="https://lk.tofsgroup.ru/" target="_blank" rel="noopener">
-                <img src="card1.jpg" alt="" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22200%22%3E%3Crect fill=%22%231e293b%22 width=%22400%22 height=%22200%22/%3E%3Ctext fill=%22%2364748b%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EСкрин сайта%3C/text%3E%3C/svg%3E'">
-                <div class="link-body">
-                    <div class="link-name">iConnect</div>
-                    <div class="link-desc"></div>
-                </div>
-            </a>
-            <a class="link-card" href="https://networking.tofsgroup.ru" target="_blank" rel="noopener">
-                <img src="card2.jpg" alt="" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22200%22%3E%3Crect fill=%22%231e293b%22 width=%22400%22 height=%22200%22/%3E%3Ctext fill=%22%2364748b%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EСкрин сайта%3C/text%3E%3C/svg%3E'">
-                <div class="link-body">
-                    <div class="link-name">Нетворкинг</div>
-                    <div class="link-desc"></div>
-                </div>
-            </a>
-            <a class="link-card" href="https://library.tofsgroup.ru/main/company-docs/" target="_blank" rel="noopener">
-                <img src="card3.jpg" alt="" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22200%22%3E%3Crect fill=%22%231e293b%22 width=%22400%22 height=%22200%22/%3E%3Ctext fill=%22%2364748b%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EСкрин сайта%3C/text%3E%3C/svg%3E'">
-                <div class="link-body">
-                    <div class="link-name">LiBRARY</div>
-                    <div class="link-desc"></div>
-                </div>
-            </a>
-            <a class="link-card" href="https://obt.continent.ru/" target="_blank" rel="noopener">
-                <img src="card4.jpg" alt="" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22200%22%3E%3Crect fill=%22%231e293b%22 width=%22400%22 height=%22200%22/%3E%3Ctext fill=%22%2364748b%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EСкрин сайта%3C/text%3E%3C/svg%3E'">
-                <div class="link-body">
-                    <div class="link-name">Continent</div>
-                    <div class="link-desc"></div>
-                </div>
-            </a>
+
+    <!-- Карусель рабочих сайтов (8 штук) -->
+    <div class="carousel-section">
+        <div class="section-title">Рабочие сайты</div>
+        <div class="carousel-info">
+            <div class="carousel-info-name" id="carouselName"></div>
+            <div class="carousel-info-desc" id="carouselDesc"></div>
+        </div>
+        <div class="carousel-wrap">
+            <button type="button" class="carousel-btn" id="carouselPrev" aria-label="Назад">‹</button>
+            <div class="carousel-track-outer" id="carouselOuter">
+                <div class="carousel-track" id="carouselTrack"></div>
+            </div>
+            <button type="button" class="carousel-btn" id="carouselNext" aria-label="Вперёд">›</button>
+        </div>
+        <div class="carousel-dots" id="carouselDots"></div>
+    </div>
+
+    <!-- Инструкции -->
+    <div class="help-section">
+        <div class="section-title">Инструкции и помощь</div>
+        <div class="help-list" id="helpList"></div>
+        <div class="help-actions">
+            <button type="button" class="show-all-btn" id="showAllHelp" style="display:none;" onclick="toggleHelpList()">Показать всё</button>
         </div>
     </div>
 
-    <div class="stats-section">
-        <div class="stats-title">Статистика генераций</div>
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-value" id="statDay">0</div>
-                <div class="stat-label">За сегодня</div>
+    <!-- Контакты -->
+    <div class="contacts-section">
+        <div class="section-title">Контакты</div>
+        <div class="contacts-grid" id="contactsGrid"></div>
+    </div>
+
+    <!-- Просмотр PDF без скачивания -->
+    <div class="modal-overlay" id="pdfModal" onclick="if(event.target===this)closePdf()">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-title" id="pdfTitle">Инструкция</div>
+                <button type="button" class="modal-close" onclick="closePdf()">Закрыть</button>
             </div>
-            <div class="stat-card">
-                <div class="stat-value" id="statWeek">0</div>
-                <div class="stat-label">За неделю</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="statMonth">0</div>
-                <div class="stat-label">За месяц</div>
+            <div class="modal-body">
+                <iframe id="pdfFrame" title="PDF"></iframe>
             </div>
         </div>
     </div>
@@ -458,76 +665,221 @@
         let data = [];
         let filterMode = 'safe';
 
-        // Глобальный счётчик через CountAPI (общий для всех устройств и пользователей)
-        // namespace уникальный для вашего сайта — не меняйте, иначе счётчик обнулится
-        const STATS_NS = 'tofsgroup-sos-generator';
+        // ===================== КАРУСЕЛЬ САЙТОВ =====================
+        // Добавляйте / меняйте сайты здесь. Картинки: card1.jpg … card8.jpg
+        const SITES = [
+            { name: 'OutLook', desc: 'Личная почта', url: 'https://mail.techofs.com/', img: 'card5.jpg' },
+            { name: 'Continent', desc: 'Покупка билетов и бронирование гостиниц', url: 'https://obt.continent.ru/', img: 'card4.jpg' },
+            { name: 'iКОННЕКТ', desc: 'Личный кабинет сотрудника', url: 'https://lk.tofsgroup.ru/', img: 'card1.jpg' },
+            { name: 'Нетворкинг', desc: 'Задачи, встречи, чат', url: 'https://networking.tofsgroup.ru', img: 'card2.jpg' },
+            { name: 'LiBRARY', desc: 'Ознакомление с документацией', url: 'https://library.tofsgroup.ru/main/company-docs/', img: 'card3.jpg' },
+            { name: 'HSE LAB', desc: 'Автоматизированная система управления охраной труда', url: 'https://oilpampservice.hserm.ru/login', img: 'card7.jpg' },
+            { name: '1C', desc: 'Авансовые отчеты', url: 'https://do.tofsgroup.ru/DO30/ru_RU/', img: 'card8.jpg' },
+            { name: 'CMP', desc: 'Онлайн курсы', url: 'https://cmp.tofsgroup.ru/courses', img: 'card6.jpg' }
+        ];
 
-        function pad(n) { return n < 10 ? '0' + n : '' + n; }
+        let carouselIndex = 0;
+        const VISIBLE = 5; // сколько видно одновременно (на широком экране)
 
-        function getStatKeys() {
-            const now = new Date();
-            const y = now.getFullYear();
-            const m = pad(now.getMonth() + 1);
-            const d = pad(now.getDate());
-            // неделя ISO-подобная: год + номер недели с понедельника
-            const day = now.getDay() || 7; // 1=пн … 7=вс
-            const thursday = new Date(now);
-            thursday.setDate(now.getDate() + 4 - day);
-            const yearStart = new Date(thursday.getFullYear(), 0, 1);
-            const weekNo = Math.ceil((((thursday - yearStart) / 86400000) + 1) / 7);
-            return {
-                day: 'day-' + y + '-' + m + '-' + d,
-                week: 'week-' + thursday.getFullYear() + '-W' + pad(weekNo),
-                month: 'month-' + y + '-' + m
-            };
+        function placeholderImg() {
+            return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200'%3E%3Crect fill='%231e293b' width='400' height='200'/%3E%3Ctext fill='%2364748b' font-family='sans-serif' font-size='16' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EСкрин сайта%3C/text%3E%3C/svg%3E";
         }
 
-        async function countApi(action, key) {
-            // action: 'hit' (увеличить) или 'get' (прочитать)
-            const url = 'https://abacus.jasoncameron.dev/' + action + '/' + STATS_NS + '/' + key;
-            const r = await fetch(url);
-            if (!r.ok) throw new Error('counter ' + r.status);
-            const j = await r.json();
-            return typeof j.value === 'number' ? j.value : 0;
+        function buildCarousel() {
+            const track = document.getElementById('carouselTrack');
+            const dots = document.getElementById('carouselDots');
+            track.innerHTML = '';
+            dots.innerHTML = '';
+            SITES.forEach((site, i) => {
+                const a = document.createElement('a');
+                a.className = 'carousel-item' + (i === 0 ? ' active' : '');
+                a.href = site.url;
+                a.target = '_blank';
+                a.rel = 'noopener';
+                a.dataset.index = i;
+                a.innerHTML = '<img src="' + site.img + '" alt="" onerror="this.src=\'' + placeholderImg() + '\'">';
+                a.addEventListener('click', (e) => {
+                    // если не активный — сначала выделяем, не уходим по ссылке
+                    if (carouselIndex !== i) {
+                        e.preventDefault();
+                        goToCarousel(i);
+                    }
+                });
+                track.appendChild(a);
+
+                const dot = document.createElement('button');
+                dot.type = 'button';
+                dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+                dot.setAttribute('aria-label', 'Слайд ' + (i + 1));
+                dot.onclick = () => goToCarousel(i);
+                dots.appendChild(dot);
+            });
+            updateCarouselUI();
         }
 
-        async function recordGenerateClick() {
-            const keys = getStatKeys();
-            try {
-                // параллельно увеличиваем день / неделю / месяц
-                await Promise.all([
-                    countApi('hit', keys.day),
-                    countApi('hit', keys.week),
-                    countApi('hit', keys.month)
-                ]);
-            } catch (e) {
-                console.warn('Не удалось обновить глобальный счётчик:', e);
+        function getVisibleCount() {
+            const w = window.innerWidth;
+            if (w <= 520) return 2;
+            if (w <= 700) return 3;
+            if (w <= 900) return 4;
+            return 5;
+        }
+
+        function goToCarousel(index) {
+            const n = SITES.length;
+            carouselIndex = ((index % n) + n) % n;
+            updateCarouselUI();
+        }
+
+        function updateCarouselUI() {
+            const site = SITES[carouselIndex];
+            document.getElementById('carouselName').textContent = site.name;
+            document.getElementById('carouselDesc').innerHTML =
+                site.desc + (site.url ? ' · <a href="' + site.url + '" target="_blank" rel="noopener">Открыть</a>' : '');
+
+            const items = document.querySelectorAll('.carousel-item');
+            const dots = document.querySelectorAll('.carousel-dot');
+            items.forEach((el, i) => el.classList.toggle('active', i === carouselIndex));
+            dots.forEach((el, i) => el.classList.toggle('active', i === carouselIndex));
+
+            const track = document.getElementById('carouselTrack');
+            const outer = document.getElementById('carouselOuter');
+            if (!items.length) return;
+            const gap = 12;
+            const itemW = items[0].getBoundingClientRect().width;
+            const vis = getVisibleCount();
+            // активный слайд стараемся держать слева (в «верху» ряда)
+            let offsetIndex = carouselIndex;
+            const maxOffset = Math.max(0, SITES.length - vis);
+            if (offsetIndex > maxOffset) offsetIndex = maxOffset;
+            const x = offsetIndex * (itemW + gap);
+            track.style.transform = 'translateX(-' + x + 'px)';
+        }
+
+        document.getElementById('carouselPrev').onclick = () => goToCarousel(carouselIndex - 1);
+        document.getElementById('carouselNext').onclick = () => goToCarousel(carouselIndex + 1);
+        window.addEventListener('resize', () => updateCarouselUI());
+
+        // свайп
+        (function () {
+            const outer = document.getElementById('carouselOuter');
+            let startX = 0;
+            outer.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+            outer.addEventListener('touchend', e => {
+                const dx = e.changedTouches[0].clientX - startX;
+                if (Math.abs(dx) > 40) {
+                    if (dx < 0) goToCarousel(carouselIndex + 1);
+                    else goToCarousel(carouselIndex - 1);
+                }
+            }, { passive: true });
+        })();
+
+        // ===================== ИНСТРУКЦИИ =====================
+        // Добавляйте инструкции сюда. type: 'pdf' | 'link'
+        // Для pdf положите файл в папку сайта (например instructions/bitrix24.pdf)
+        const INSTRUCTIONS = [
+            { title: 'Подключение Bitrix24', meta: 'PDF · инструкция', type: 'pdf', src: 'instructions/bitrix24/index.html' },
+            { title: 'Инструкция в системе бронирования (октябрь 2026)', meta: 'PDF · инструкция', type: 'pdf', src: 'instructions/1c_avans/index.html' },
+            { title: 'Как заполнить Авансовый отчет в 1С', meta: 'PDF · инструкция', type: 'pdf', src: 'instructions/continent_10.26/index.html' }
+        ];
+
+        const HELP_PREVIEW = 5;
+        let helpExpanded = false;
+
+        function buildHelp() {
+            const list = document.getElementById('helpList');
+            const btn = document.getElementById('showAllHelp');
+            list.innerHTML = '';
+            list.classList.toggle('expanded', helpExpanded);
+
+            INSTRUCTIONS.forEach((item, i) => {
+                const el = document.createElement('a');
+                el.className = 'help-item' + (i >= HELP_PREVIEW ? ' hidden-help' : '');
+                el.href = '#';
+                el.innerHTML =
+                    '<div><div class="help-item-title">' + item.title + '</div>' +
+                    '<div class="help-item-meta">' + (item.meta || '') + '</div></div>' +
+                    '<span class="help-item-arrow">›</span>';
+                el.onclick = (e) => {
+                    e.preventDefault();
+                    openInstruction(item);
+                };
+                list.appendChild(el);
+            });
+
+            if (INSTRUCTIONS.length > HELP_PREVIEW) {
+                btn.style.display = 'inline-block';
+                btn.textContent = helpExpanded ? 'Свернуть' : 'Показать всё';
+            } else {
+                btn.style.display = 'none';
             }
-            updateStatsUI();
         }
 
-        async function updateStatsUI() {
-            const keys = getStatKeys();
-            const dayEl = document.getElementById('statDay');
-            const weekEl = document.getElementById('statWeek');
-            const monthEl = document.getElementById('statMonth');
-            try {
-                const [day, week, month] = await Promise.all([
-                    countApi('get', keys.day),
-                    countApi('get', keys.week),
-                    countApi('get', keys.month)
-                ]);
-                dayEl.textContent = day;
-                weekEl.textContent = week;
-                monthEl.textContent = month;
-            } catch (e) {
-                dayEl.textContent = '—';
-                weekEl.textContent = '—';
-                monthEl.textContent = '—';
-                console.warn('Не удалось загрузить статистику:', e);
+        function toggleHelpList() {
+            helpExpanded = !helpExpanded;
+            buildHelp();
+        }
+
+        function openInstruction(item) {
+            if (item.type === 'pdf') {
+                openPdf(item.title, item.src);
+            } else {
+                window.open(item.src, '_blank', 'noopener');
             }
         }
 
+        function openPdf(title, src) {
+            document.getElementById('pdfTitle').textContent = title;
+            // Браузерный просмотр PDF (без принудительного скачивания)
+            document.getElementById('pdfFrame').src = src;
+            document.getElementById('pdfModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closePdf() {
+            document.getElementById('pdfModal').classList.remove('open');
+            document.getElementById('pdfFrame').src = '';
+            document.body.style.overflow = '';
+        }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closePdf(); });
+
+// ===================== КОНТАКТЫ =====================
+const CONTACTS = [
+    {
+        dept: 'SOLF',
+        name: 'Службой технической поддержки пользователей',
+        detail: 'Тел.: +7 800 600 95 02<br>Почта: <a href="mailto:SOLV@tofsgroup.ru">SOLV@tofsgroup.ru</a>',
+        description: 'Пн–Пт с 02:00 до 18:00 (по МСК)'
+    },
+	    {
+        dept: 'Continent Express',
+        name: 'Бронирование и выписка авиа, ж/д билетов, бронирование отелей и др. услуг оффлайн',
+        detail: 'Тел.: +7 495 775 77 52 добавочный #1292<br>Почта: <a href="mailto:ravel3@continent.ru">Travel3@continent.ru</a>',
+        description: 'Пн–Пт с 08:00 до 18:00 (по МСК)'
+    },
+		    {
+        dept: 'Медосмотры',
+        name: 'Ярусов Дмитрии Иванович',
+        detail: 'Заключение МО отправлять на почту: <a href="mailto:Dmitriy.Yarusov@tofsgroup.ru">Dmitriy.Yarusov@tofsgroup.ru</a>',
+        description: 'Пн–Пт с 08:00 до 17:00'
+    }
+];
+
+function buildContacts() {
+    const grid = document.getElementById('contactsGrid');
+    grid.innerHTML = '';
+    
+    CONTACTS.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'contact-card';
+        div.innerHTML =
+            '<div class="contact-dept">' + c.dept + '</div>' +
+            '<div class="contact-name">' + c.name + '</div>' +
+            '<div class="contact-detail">' + c.detail + '</div>' +
+            '<div class="contact-description">' + c.description + '</div>';
+        grid.appendChild(div);
+    });
+}
+        // ===================== ГЕНЕРАТОР =====================
         function getCurrentSeason() {
             const m = new Date().getMonth() + 1;
             if (m === 12 || m <= 2) return '1';
@@ -619,7 +971,7 @@
             "электромонтёр": ["электромонтер", "сотрудник", "работник"],
             "электромонтёры": ["электромонтеры", "сотрудники", "работники"],
             "коллега": ["сотрудник", "работник", "напарник"],
-            "коллеги": ["сотрудники", "работники", "напарники"],
+            "коллеги": ["сотрудники", "работники", "напарники"]
         };
         const phraseVariants = {
             "нет нареканий по работе": ["Нареканий по работе нет", "Претензий к работе нет", "Работа выполнена без замечаний", "Замечаний и нареканий нет"],
@@ -628,7 +980,7 @@
             "Нет нареканий": ["Нареканий нет", "Претензий нет", "Замечаний нет"],
             "Не требуются": ["Корректирующие действия не требуются", "Дополнительных мер не требуется", "Меры не требуются"],
             "не требуются": ["Корректирующие действия не требуются", "Дополнительных мер не требуется"],
-            "Корректирующие действия не требуются": ["Дополнительных мер не требуется", "Меры не требуются", "Корректировка не нужна"],
+            "Корректирующие действия не требуются": ["Дополнительных мер не требуется", "Меры не требуются", "Корректировка не нужна"]
         };
         function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
         function rephrase(text) {
@@ -654,8 +1006,6 @@
             return result;
         }
 
-        updateStatsUI();
-
         fetch('data.json')
             .then(r => {
                 if (!r.ok) throw new Error('Не удалось загрузить data.json');
@@ -666,15 +1016,13 @@
                 document.getElementById('genBtn').disabled = false;
                 document.getElementById('genBtn').textContent = 'Сгенерировать';
                 setFilter('safe');
-                updateStatsUI();
             })
             .catch(err => {
                 const el = document.getElementById('status');
                 if (el) {
-                    el.textContent = 'Ошибка: ' + err.message;
+                   
                     el.classList.add('error');
                 }
-                document.getElementById('genBtn').textContent = 'Ошибка загрузки';
             });
 
         function generate() {
@@ -711,8 +1059,8 @@
                 stopField.classList.add('hidden');
             }
             document.getElementById('resultCard').classList.add('visible');
-            recordGenerateClick();
         }
+
         function copyField(id, btn) {
             const text = document.getElementById(id).textContent;
             navigator.clipboard.writeText(text).then(() => {
@@ -725,6 +1073,11 @@
                 }, 1500);
             });
         }
+
+        // init UI blocks
+        buildCarousel();
+        buildHelp();
+        buildContacts();
     </script>
 </body>
 </html>
