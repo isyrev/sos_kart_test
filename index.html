@@ -7,17 +7,22 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <style>
         :root {
-            --accent: #0078be;
-            --accent-hover: #00dbaf;
-            --accent-dim: rgba(3, 190, 147, 0.25);
-            --accent-glow: rgba(3, 190, 147, 0.4);
+            --accent: #c41e3a;
+            --accent-hover: #2e8b57;
+            --accent-dim: rgba(196, 30, 58, 0.25);
+            --accent-glow: rgba(196, 30, 58, 0.45);
+            --accent-safe: #2e8b57;
+            --accent-safe-hover: #3cb371;
+            --accent-danger: #c41e3a;
+            --accent-danger-hover: #e63950;
             --bg-dark: #0b1220;
-            --card-bg: rgba(15, 23, 42, 0.88);
-            --border: rgba(3, 190, 147, 0.2);
+            --card-bg: rgba(15, 23, 42, 0.9);
+            --border: rgba(196, 30, 58, 0.25);
             --text: #f1f5f9;
             --text-muted: #94a3b8;
             --text-dim: #64748b;
             --white: #ffffff;
+            --gold: #f0c14b;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html {
@@ -67,9 +72,9 @@
             pointer-events: none;
         }
         /* Контент выше фона; модалку и toast не трогаем — у них свой z-index */
-        body > *:not(.bg-photo):not(.bg-overlay):not(.modal-overlay):not(.toast) {
+        body > *:not(.bg-photo):not(.bg-overlay):not(.modal-overlay):not(.toast):not(.ny-garland):not(.ny-snow) {
             position: relative;
-            z-index: 2;
+            z-index: 5;
         }
         .header {
             text-align: center;
@@ -575,15 +580,130 @@
             }
             .carousel-btn { width: 36px; height: 36px; font-size: 1.1rem; }
         }
+    
+        /* ===== New Year decorations ===== */
+        .ny-garland {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            height: 48px;
+            z-index: 100;
+            background: url('garland.gif') repeat-x top center;
+            background-size: contain;
+            pointer-events: none;
+        }
+        .ny-snow {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none;
+            background-image: url("snow1.png"), url("snow2.png"), url("snow3.png");
+            background-repeat: repeat;
+            animation: ny-snow-fall 22s linear infinite;
+            opacity: 0.85;
+        }
+        @keyframes ny-snow-fall {
+            0% { background-position: 0px 0px, 0px 0px, 0px 0px; }
+            100% { background-position: 500px 1000px, 400px 400px, 300px 300px; }
+        }
+        .logo-wrap {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 14px;
+        }
+        .logo-wrap .logo {
+            margin-bottom: 0;
+            display: block;
+        }
+        .logo-hat {
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            width: 52px;
+            height: auto;
+            transform: translateX(-30%) rotate(18deg);
+            pointer-events: none;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+            z-index: 2;
+            transition: transform 0.35s ease;
+        }
+        .logo-wrap:hover .logo-hat {
+            transform: translateX(-30%) rotate(12deg) scale(1.05);
+        }
+        .header {
+            padding-top: 52px; /* space for garland */
+        }
+        /* New Year buttons */
+        .filter-btn {
+            background: rgba(30, 41, 59, 0.85);
+            color: var(--text-muted);
+            border: 1px solid rgba(100, 116, 139, 0.45);
+            position: relative;
+            overflow: hidden;
+        }
+        .filter-btn#btnSafe.active {
+            background: linear-gradient(135deg, #1a7a45, #3cb371);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 4px 18px rgba(46, 139, 87, 0.45);
+        }
+        .filter-btn#btnDanger.active {
+            background: linear-gradient(135deg, #a01830, #e63950);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 4px 18px rgba(196, 30, 58, 0.5);
+        }
+        .filter-btn:not(.active):hover {
+            border-color: var(--gold);
+            color: var(--white);
+        }
+        .generate-btn {
+            background: linear-gradient(135deg, #c41e3a 0%, #2e8b57 100%);
+            color: var(--white);
+            box-shadow: 0 4px 22px rgba(196, 30, 58, 0.4), 0 0 0 1px rgba(240, 193, 75, 0.25);
+            padding: 16px 40px;
+            font-size: 1.15rem;
+            border: 1px solid rgba(240, 193, 75, 0.35);
+            position: relative;
+        }
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 28px rgba(196, 30, 58, 0.5), 0 0 12px rgba(240, 193, 75, 0.25);
+            filter: brightness(1.08);
+        }
+        .generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            filter: none;
+        }
+        /* subtle card border glow NY */
+        .card {
+            border: 1px solid rgba(196, 30, 58, 0.22);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(46, 139, 87, 0.08);
+        }
+        .header h1 {
+            text-shadow: 0 0 18px rgba(196, 30, 58, 0.35);
+        }
+
     </style>
 </head>
 <body>
     <div class="bg-photo"></div>
     <div class="bg-overlay"></div>
+    <div class="ny-garland" aria-hidden="true"></div>
+    <div class="ny-snow" aria-hidden="true"></div>
     <div class="header">
-        <img class="logo" src="logo.png" alt="Логотип" onerror="this.style.display='none'">
+        <div class="logo-wrap">
+            <img class="logo-hat" src="hat.png" alt="" aria-hidden="true">
+            <img class="logo" src="logo.png" alt="Логотип" onerror="this.style.display='none'">
+        </div>
         <h1>Генератор SOS карт</h1>
-        <p>Твой помощник в написании SOSок</p>
+        <p>Твой помощник в написании SOSок 🎄</p>
     </div>
     <div class="controls">
         <div class="filter-row">
