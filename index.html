@@ -614,26 +614,7 @@
             position: relative;
             display: inline-block;
             margin-bottom: 14px;
-        }
-        .logo-wrap .logo {
-            margin-bottom: 0;
-            display: block;
-        }
-        .logo-hat {
-            position: absolute;
-            top: -28px;
-            left: 24%;
-            width: 52px;
-            height: auto;
-            transform: translateX(-30%) rotate(-34deg);
-            pointer-events: none;
-            filter: drop-shadow(0 5px 4px rgba(0,0,0,0.4));
-            z-index: 5;
-            transition: transform 0.35s ease;
-        }
-        .logo-wrap:hover .logo-hat {
-            transform: translateX(-30%) rotate(12deg) scale(1.05);
-        }
+
         .header {
             padding-top: 52px; /* space for garland */
         }
@@ -699,7 +680,6 @@
     <div class="ny-snow" aria-hidden="true"></div>
     <div class="header">
         <div class="logo-wrap">
-            <img class="logo-hat" src="hat.png" alt="" aria-hidden="true">
             <img class="logo" src="logo.png" alt="Логотип" onerror="this.style.display='none'">
         </div>
         <h1>Генератор SOS карт</h1>
